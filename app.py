@@ -14,6 +14,10 @@ policyFile = "policy.json"
 proPolicy = ProcessPolicy()
 Q = proPolicy.getPolicy(policyFile)
 
+@app.route('/')
+def index():
+    return 'Index Page'
+
 @app.route("/api/agent", methods = ['POST'])
 @cross_origin(origin = "*", headers=['Content-Type', 'Authorization'])
 def get_simulation_data():

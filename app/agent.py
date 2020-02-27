@@ -1,6 +1,6 @@
 import json
-from enviroment import StockEnviroment
-from enviroment import StockPolicy
+from app.enviroment import StockEnviroment
+from app.enviroment import StockPolicy
 from collections import defaultdict
 from numpy import array
 

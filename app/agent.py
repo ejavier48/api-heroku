@@ -1,14 +1,15 @@
 import json
-from app.enviroment import StockEnviroment
-from app.enviroment import StockPolicy
+from app.stock_enviroment import StockEnviroment
+from app.stock_policy import StockPolicy
 from collections import defaultdict
-from numpy import array
+from numpy import array, arange
+from numpy.random import choice
 
 
 class ProcessPolicy():
 
     def __init__(self):
-        self._change = lambda x: (int(x[0]), x[1].replace("\'", ""), int(x[2]), int(x[3]), int(x[4]))
+        self._change = lambda x: tuple(map(int, x.split(", ")))
     
     def getPolicy(self, fname):
         Q = defaultdict(lambda: array([1, 0, 0]))
@@ -51,9 +52,10 @@ class Agent():
 
             actions = self._policy.policyFunction(state, self.Q, eps)
 
-            action = self._policy.bestAction(state, self.Q)
+            #action = self._policy.bestAction(state, self.Q)
 
-            #action = np.random.choice(np.arange(len(actions)), p = actions)
+            action = choice(arange(len(actions)), p = actions)
+            
             kAction = self._policy.nameAction(abs(state[-1]), action)
             
             nState, reward, done = self._env.step(kAction)
@@ -70,8 +72,10 @@ class Agent():
                     tmove['start'] = index
 
             nState = self._processState(nState)
+            
             if done:
                 break
+            
             state = nState
             index += 1
             
@@ -84,7 +88,7 @@ class Agent():
 if __name__ == "__main__":
     
     Q = {} 
-    qfile = 'data10_251.922485_BestQ.json'
+    qfile = '+policy.json'
     rPolicy = ProcessPolicy()
     Q = rPolicy.getPolicy(qfile)
     with open('data.json', 'r') as file:

@@ -25,7 +25,7 @@ def get_simulation_data():
     logger = logging.getLogger('get_simulation_data' + str(uid))
 
     try:
-        data = json.loads(request)
+        data = request.get_json()
         agent = Agent(data['data'], Q)
         response = agent.run()
         return jsonify(response)

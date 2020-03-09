@@ -9,7 +9,7 @@ from numpy.random import choice
 class ProcessPolicy():
 
     def __init__(self):
-        self._change = lambda x: tuple(map(int, x.split(", ")))
+        self._change = lambda x: tuple(map(int, x))
     
     def getPolicy(self, fname):
         Q = defaultdict(lambda: array([1, 0, 0]))

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from uuid import uuid4
 import logging
+import json
 from app.agent import Agent, ProcessPolicy
 
 app = Flask(__name__, static_folder='./')
@@ -24,7 +25,7 @@ def get_simulation_data():
     logger = logging.getLogger('get_simulation_data' + str(uid))
 
     try:
-        data = request.get_json()
+        data = json.loads(request)
         agent = Agent(data['data'], Q)
         response = agent.run()
         return jsonify(response)

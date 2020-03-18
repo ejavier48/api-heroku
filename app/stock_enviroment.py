@@ -1,14 +1,14 @@
 
 class StockEnviroment():
     
-    def __init__(self, data):
+    def __init__(self, data, capital = 1000.0):
         self.__data = data #dataset, information to generate the states
         self.__total = len(data) #number of samples in the dataset
         self.__index = 0 #index for current sample
-        self.__capital = 1000 #start capital for each episode
+        self.__capital = capital #start capital for each episode
 
     #start new episode with same data
-    def reset(self):
+    def reset(self) -> dict:
         self.__index = 0
         self.__state = {}
         self.__moves = []
@@ -17,20 +17,20 @@ class StockEnviroment():
         return self.__state
 
     #receive action, return new state, reward and wheter episode is over or not
-    def step(self, action):
-        reward = self.__prepare_state(action)
+    def step(self, action) -> (dict, float, float, bool):
+        current_reward = self.__prepare_state(action)
         if self.__lost_capital():
-            return self.__state, 0, True
-        return self.__state, reward, self.__is_over()
+            return self.__state, current_reward, self.__money, True
+        return self.__state, current_reward, self.__money, self.__is_over()
     
-    def __lost_capital(self):
-        return (self.__money < 5) and (self.__state['position'] == 0)
+    def __lost_capital(self) -> bool:
+        return (self.__money < 5) and (self.__state['position']['type'] == 0)
 
     #check if episode is over
-    def __is_over(self):
+    def __is_over(self) -> bool:
         return self.__index == self.__total or self.__lost_capital()
 
-    def __candle_group(self, bStick, uWick, lWick):
+    def __candle_group(self, bStick, uWick, lWick) -> int:
         if(bStick > uWick):
             if(bStick > lWick):
                 if(bStick>(uWick+lWick)):
@@ -73,7 +73,8 @@ class StockEnviroment():
             return 16#"lW>uW>bS"
 
     #return state after take an action
-    def __prepare_state(self, action = 'K'):
+    def __prepare_state(self, action = 'K') -> float:
+        current_reward = 0.0
         
         #check if episode already finish
         if self.__is_over():
@@ -87,8 +88,19 @@ class StockEnviroment():
         if action != 'K': #if action different to Keep
 
             if action == 'C': #close position
+                price_diff = position['type'] * (current['Open'] - position['price'])
+                
+                gainigs = position['price'] + price_diff
+                
                 #get the price difference and multiply it for the number of stock bought
-                self.__money += position['type'] * (position['num'] * (current['Open'] - position['price'])) 
+                
+                self.__money += position['num'] * gainigs
+                
+                current_reward = price_diff
+                
+                if(0 < current_reward):
+                    current_reward = current_reward  * (1.5) #boost for current reward, imitating traders when get gainigs
+                
                 position = {'type':0}
                 
             elif action == 'B': #open buy position
@@ -96,21 +108,21 @@ class StockEnviroment():
                 position['price'] = current['Open'] #price when the stock was bought
                 position['num'] = int(self.__money/position['price']) #num of stock bought
 
-                if(position['num'] <= 0): #If not enought money, cancel position
+                if(position['num'] < 1): #If not enought money, cancel position
                     position = {'type':0}
                 else:
-                    self.__money -= position['num']*position['price'] #money available
+                    self.__money -= position['num'] * position['price'] #money available
 
             elif action == 'S': #open sell position
                 position['type'] = -1 #Label as SELL position
                 position['price'] = current['Open'] #price when the stock was bought
                 position['num'] = int(self.__money/position['price']) #num of stock bought
 
-                if(position['num'] <= 0): #If not enought money, cancel position
+                if(position['num'] < 1): #If not enought money, cancel position
                     position = {'type':0}
                 else:
                     self.__money -= (position['num']*position['price']) #money available
-        
+                    
         #elements to resume state
         
         #Element get from Open, Close, High, Low prices
@@ -124,9 +136,10 @@ class StockEnviroment():
 
         #If there is a position open, check gain state
         if position['type'] != 0:
-            aux = position['type'] * (current['Close'] - position['price'])
-            gain = 1 if 0 < aux else -1 
-        
+            #get value for current invesment 
+            price_diff = position['type'] * (current['Open'] - position['price'])
+            gain = 1 if 0 < price_diff else -1 
+            
         #Check if the candle moved up or down
         tendency = 0 if current['Close'] < current['Open'] else 1
         
@@ -150,9 +163,9 @@ class StockEnviroment():
         
         #Calculate phi
         if tStick == 0: #This happens when there are no moves in the market
-            phi = 10
+            phi = 100
         else: #Get the proportion of the Stick Body to its length
-            phi = round( (bStick/tStick) * 10)
+            phi = round( (bStick/tStick) * 100)
         
         #Get the stick's group (1-16)       
         group = self.__candle_group(bStick, uWick, lWick)
@@ -171,4 +184,7 @@ class StockEnviroment():
         #set new state
         self.__state = nextState
         #return reward
-        return self.__money#-self.__capital)
+        return current_reward
+
+    def set_state(self, state):
+        self.__state = state

@@ -58,7 +58,7 @@ class Agent():
             
             kAction = self._policy.nameAction(abs(state[-1]), action)
             
-            nState, reward, done = self._env.step(kAction)
+            nState, reward, money, done = self._env.step(kAction)
 
             if kAction != 'K':
                 if kAction == 'C':

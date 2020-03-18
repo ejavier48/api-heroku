@@ -30,5 +30,5 @@ def get_simulation_data():
         response = agent.run()
         return jsonify(response)
     except Exception as e:
-        logger.warning('Id:{} Error: {}'.format(str(uid), e.message))
-        raise('Id:{} Error: {}'.format(str(uid), e.message))
+        logger.warning('Id:{} Error: {}'.format(str(uid), str(e)))
+        raise('Id:{} Error: {}'.format(str(uid), str(e)))

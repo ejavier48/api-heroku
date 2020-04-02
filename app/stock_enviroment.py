@@ -88,7 +88,7 @@ class StockEnviroment():
         if action != 'K': #if action different to Keep
 
             if action == 'C': #close position
-                price_diff = position['type'] * (current['Open'] - position['price'])
+                price_diff = position['type'] * (current['open'] - position['price'])
                 
                 gainigs = position['price'] + price_diff
                 
@@ -105,7 +105,7 @@ class StockEnviroment():
                 
             elif action == 'B': #open buy position
                 position['type'] = 1 #Label as BUY position
-                position['price'] = current['Open'] #price when the stock was bought
+                position['price'] = current['open'] #price when the stock was bought
                 position['num'] = int(self.__money/position['price']) #num of stock bought
 
                 if(position['num'] < 1): #If not enought money, cancel position
@@ -115,7 +115,7 @@ class StockEnviroment():
 
             elif action == 'S': #open sell position
                 position['type'] = -1 #Label as SELL position
-                position['price'] = current['Open'] #price when the stock was bought
+                position['price'] = current['open'] #price when the stock was bought
                 position['num'] = int(self.__money/position['price']) #num of stock bought
 
                 if(position['num'] < 1): #If not enought money, cancel position
@@ -125,8 +125,8 @@ class StockEnviroment():
                     
         #elements to resume state
         
-        #Element get from Open, Close, High, Low prices
-        lWick = 0.0 #Lower wick
+        #Element get from open, close, high, low prices
+        lWick = 0.0 #lower wick
         uWick = 0.0 #Upper Wick
         bStick = 0.0 #Stick body
         tStick = 0.0 #Stick Length
@@ -137,29 +137,29 @@ class StockEnviroment():
         #If there is a position open, check gain state
         if position['type'] != 0:
             #get value for current invesment 
-            price_diff = position['type'] * (current['Open'] - position['price'])
+            price_diff = position['type'] * (current['open'] - position['price'])
             gain = 1 if 0 < price_diff else -1 
             
         #Check if the candle moved up or down
-        tendency = 0 if current['Close'] < current['Open'] else 1
+        tendency = 0 if current['close'] < current['open'] else 1
         
         #Get the stick's length
-        tStick = current['High'] - current['Low']
+        tStick = current['high'] - current['low']
         
         if tendency == 0: #bearish or down stick
-            #Upper Wick = Higher price - Open price
-            uWick = current['High'] - current['Open']
-            #Lower Wick = Close price - Lower price
-            lWick = current['Close'] - current['Low']
-            #Stick body = Open price - Close price
-            bStick = current['Open'] - current['Close']    
+            #Upper Wick = higher price - open price
+            uWick = current['high'] - current['open']
+            #lower Wick = close price - lower price
+            lWick = current['close'] - current['low']
+            #Stick body = open price - close price
+            bStick = current['open'] - current['close']    
         else: #bullish or up stick
-            #Upper Wick = Higher price - Close price
-            uWick = current['High'] - current['Close']
-            #Lower Wick = Open price - Lower price
-            lWick = current['Open'] - current['Low']
-            #Stick body = Close price - Open price
-            bStick = current['Close'] - current['Open']
+            #Upper Wick = higher price - close price
+            uWick = current['high'] - current['close']
+            #lower Wick = open price - lower price
+            lWick = current['open'] - current['low']
+            #Stick body = close price - open price
+            bStick = current['close'] - current['open']
         
         #Calculate phi
         if tStick == 0: #This happens when there are no moves in the market
